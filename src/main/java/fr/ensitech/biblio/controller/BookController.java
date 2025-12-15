@@ -150,4 +150,116 @@ public class BookController implements IBookController{
             return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
         }
     }
+    @GetMapping("/published/{published}")
+    @Override
+    public ResponseEntity<List<Book>> getBooksByPublished(
+            @PathVariable boolean published) {
+
+        try {
+            List<Book> books = bookService.getBooksByPublished(published);
+            if (books.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/title/{title}")
+    @Override
+    public ResponseEntity<List<Book>> getBooksByTitle(
+            @PathVariable String title) {
+
+        if (title == null || title.isBlank()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            List<Book> books = bookService.getBooksByTitle(title);
+            if (books.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/title/contains/{text}")
+    @Override
+    public ResponseEntity<List<Book>> getBooksByTitleContains(
+            @PathVariable String text) {
+
+        if (text == null || text.isBlank()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            List<Book> books = bookService.getBooksByTitleContains(text);
+            if (books.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/isbn/{isbn}")
+    @Override
+    public ResponseEntity<Book> getBookByIsbn(
+            @PathVariable String isbn) {
+
+        if (isbn == null || isbn.isBlank()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            Book book = bookService.getBookByIsbn(isbn);
+            if (book == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>(book, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/search/{text}")
+    @Override
+    public ResponseEntity<List<Book>> getBooksByTitleOrDescription(
+            @PathVariable String text) {
+
+        if (text == null || text.isBlank()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            List<Book> books = bookService.getBooksByTitleOrDescription(text, text);
+            if (books.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/between/{startYear}/{endYear}")
+    @Override
+    public ResponseEntity<List<Book>> getBooksBetweenYears(
+            @PathVariable int startYear,
+            @PathVariable int endYear) {
+
+        if (startYear <= 0 || endYear <= 0 || startYear > endYear) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            List<Book> books = bookService.getBooksBetweenYears(startYear, endYear);
+            if (books.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(books, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

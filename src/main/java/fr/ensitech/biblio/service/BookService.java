@@ -77,9 +77,10 @@ public class BookService implements IBookService {
     public List<Book> getBooksByAuthor(Author author) throws Exception {
         return null;
     }
-
-
-
+    @Override
+    public List<Book> getBooksByTitleContains(String text) throws Exception {
+        return bookRepository.findByTitleContainingIgnoreCase(text);
+    }
 
     // 4
     @Override

@@ -14,4 +14,10 @@ public interface IBookController {
     ResponseEntity<String> deleteBook(long id);
     ResponseEntity<List<Book>>  getAllBooks();
     ResponseEntity<?> reserverBook(long bookId, String email);
+    ResponseEntity<List<Book>> getBooksByPublished(boolean published);
+    ResponseEntity<List<Book>> getBooksByTitle(String title);
+    ResponseEntity<List<Book>> getBooksByTitleContains(String text);
+    ResponseEntity<Book> getBookByIsbn(String isbn);
+    ResponseEntity<List<Book>> getBooksByTitleOrDescription(String text);
+    ResponseEntity<List<Book>> getBooksBetweenYears(int startYear, int endYear);
 }

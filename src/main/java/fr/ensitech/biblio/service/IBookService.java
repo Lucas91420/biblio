@@ -18,4 +18,5 @@ public interface IBookService {
     List<Book> getBooksByPublished(boolean published) throws Exception;
     Book getBookByIsbn(String isbn) throws Exception;
     List<Book> getBooksByTitleOrDescription(String title, String description) throws Exception;
+    List<Book> getBooksByTitleContains(String text) throws Exception;
 }
