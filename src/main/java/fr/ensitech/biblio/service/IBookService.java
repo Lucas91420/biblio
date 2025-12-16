@@ -3,12 +3,11 @@ package fr.ensitech.biblio.service;
 import fr.ensitech.biblio.entity.Author;
 import fr.ensitech.biblio.entity.Book;
 
-import java.util.Date;
 import java.util.List;
 
 public interface IBookService {
 
-    void addOrUpdateBook(Book book) throws Exception;
+    Book addOrUpdateBook(Book book) throws Exception;
     void deleteBook(long id) throws Exception;
     List<Book> getBooks() throws Exception;
     Book getBook(long id) throws Exception;

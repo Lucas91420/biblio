@@ -9,6 +9,7 @@ import java.util.Set;
 @Entity
 @Table(name = "authors", catalog = "biblio_database")
 @Getter @Setter @ToString @NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Author {
 
     @Id

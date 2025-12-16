@@ -2,6 +2,7 @@ package fr.ensitech.biblio.service;
 
 import fr.ensitech.biblio.entity.Author;
 import fr.ensitech.biblio.entity.Book;
+import fr.ensitech.biblio.repository.IAuthorRepository;
 import fr.ensitech.biblio.repository.IBookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,18 +18,27 @@ public class BookService implements IBookService {
     @Autowired
     private IBookRepository bookRepository;
 
+    private IAuthorRepository authorRepository;
+
     @Override
-    public void addOrUpdateBook(Book book) throws Exception {
-        if (book.getId() <0){
-            throw new Exception("Book id must be greater than 0 ");
+    public Book addOrUpdateBook(Book book) throws Exception {
+        if (book.getId() != null && book.getId() < 0){
+            throw new Exception("Book id must be greater than 0");
         }
-        if (book.getId()  <= 0) {
+
+        if(book.getId() == null || book.getId() == 0) {
+            Book _book = bookRepository.findByIsbnIgnoreCase(book.getIsbn());
+            if (_book != null) {
+                throw new IllegalArgumentException("Book with same ISBN already exists");
+            }
+            book.getAuthors().forEach(a -> authorRepository.save(a));
             bookRepository.save(book);
         }
-        else{
-            Book _book = bookRepository.findById(book.getId()).get();
-            if(book == null){
-                throw new Exception("Book not found");
+
+        if (book.getId() > 0) {
+            Book _book = bookRepository.findById(book.getId()).orElse(null);
+            if (_book == null) {
+                throw new Exception("Book to update not found");
             }
             _book.setIsbn(book.getIsbn());
             _book.setTitle(book.getTitle());
@@ -38,14 +48,25 @@ public class BookService implements IBookService {
             _book.setCategory(book.getCategory());
             _book.setLanguage(book.getLanguage());
             _book.setNbPages(book.getNbPages());
-            _book.setPublished(book.isPublished());
+            //_book.setPublished(book.getpublished());
             bookRepository.save(_book);
         }
+
+        return book;
     }
 
     @Override
     public void deleteBook(long id) throws Exception {
-        //bookRepository.delete(book);
+        //bookRepository.deleteById(id);
+
+        if (id <= 0) {
+            throw new IllegalArgumentException("Book id must be > 0");
+        }
+        Book book = bookRepository.findById(id).orElse(null);
+        if(book == null){
+            throw new IllegalArgumentException("Book not found !");
+        }
+        bookRepository.deleteById(id);
     }
 
     @Override
@@ -112,3 +133,4 @@ public class BookService implements IBookService {
         return bookRepository.findByPublicationDateBetween(startDate, endDate);
     }
 }
+

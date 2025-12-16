@@ -28,6 +28,8 @@ public interface IBookRepository extends JpaRepository<Book, Long> {
     // Recherche tous les livres publiés entre deux dates précise 6
     List<Book> findByPublicationDateBetween(Date startDate, Date endDate);
 
+    Book existsByIsbn(String isbn);
+
     //@Query("select b from Book b where  ")
     //List<Book> findBooksByAuthor(Author author);
 

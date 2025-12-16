@@ -10,6 +10,7 @@ import java.util.Set;
 @Entity
 @Table(name = "books", catalog = "biblio_database")
 @Getter @Setter @ToString @NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Book {
 
     @Id
@@ -36,7 +37,7 @@ public class Book {
     private String isbn;
 
     @Column(name = "nb_pages")
-    private Integer nbPages;
+    private short nbPages;
 
     @Column(length = 64)
     private String category;
@@ -50,5 +51,6 @@ public class Book {
     // Relation vers Author
     @ManyToMany (fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "author_book", joinColumns = @JoinColumn(name = "author_id"), inverseJoinColumns =  @JoinColumn(name = "book_id"))
+    @Singular
     private Set<Author> authors = new HashSet<>();
 }
