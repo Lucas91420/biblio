@@ -18,6 +18,7 @@ public class BookService implements IBookService {
     @Autowired
     private IBookRepository bookRepository;
 
+    @Autowired
     private IAuthorRepository authorRepository;
 
     @Override
@@ -51,7 +52,6 @@ public class BookService implements IBookService {
             //_book.setPublished(book.getpublished());
             bookRepository.save(_book);
         }
-
         return book;
     }
 
@@ -69,7 +69,7 @@ public class BookService implements IBookService {
         bookRepository.deleteById(id);
     }
 
-    @Override
+    /*@Override
     public List<Book> getBooks() throws Exception {
         return bookRepository.findAll();
     }
@@ -80,7 +80,26 @@ public class BookService implements IBookService {
         return optional.orElse(null);
     }
 
-    // => correspond à l'ordre des méthodes demandées
+
+
+    // 1
+    @Override
+    public List<Book> getBooksByPublished(boolean published) throws Exception {
+        return bookRepository.findByPublished(published);
+    }*/
+
+    @Override
+    public List<Book> getBooks() throws Exception {
+        return bookRepository.findAll();
+    }
+
+    @Override
+    public Book getBook(long id) throws Exception {
+        if (id <= 0) {
+            throw new IllegalArgumentException("Book id must be > 0");
+        }
+        return bookRepository.findById(id).orElse(null);
+    }
 
     // 1
     @Override

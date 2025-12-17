@@ -14,4 +14,7 @@ public class SecurityQuestion {
 
     @Column(nullable = false, length = 255)
     private String label;
+
+    public void setQuestion(String s) {
+    }
 }

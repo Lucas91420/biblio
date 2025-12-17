@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.swing.text.html.Option;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -179,4 +180,85 @@ public class BookServiceTest {
     void shouldFindBooksByTitle(){
 
     }
+
+    @Test
+    @SneakyThrows
+    void shouldGetBookByIdWhenExists() {
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+
+        Book result = bookService.getBook(1L);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getIsbn()).isEqualTo("123456789");
+        verify(bookRepository).findById(1L);
+    }
+
+    @Test
+    void shouldThrowWhenGetBookWithInvalidId() {
+        assertThatThrownBy(() -> bookService.getBook(0L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Book id must be > 0");
+
+        assertThatThrownBy(() -> bookService.getBook(-1L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Book id must be > 0");
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldReturnNullWhenGetBookNotFound() {
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        Book result = bookService.getBook(99L);
+
+        assertThat(result).isNull();
+        verify(bookRepository).findById(99L);
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldGetBookByIsbn() {
+        when(bookRepository.findByIsbnIgnoreCase("123456789")).thenReturn(book);
+
+        Book result = bookService.getBookByIsbn("123456789");
+
+        assertThat(result).isNotNull();
+        verify(bookRepository).findByIsbnIgnoreCase("123456789");
+    }
+    @Test
+    @SneakyThrows
+    void shouldReturnNullWhenIsbnEmpty() {
+        when(bookRepository.findByIsbnIgnoreCase(" ")).thenReturn(null);
+
+        Book result = bookService.getBookByIsbn(" ");
+
+        assertThat(result).isNull();
+        verify(bookRepository).findByIsbnIgnoreCase(" ");
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldReturnEmptyListWhenGetBooksByTitleEmpty() {
+        when(bookRepository.findByTitleIgnoreCase("")).thenReturn(List.of());
+
+        List<Book> result = bookService.getBooksByTitle("");
+
+        assertThat(result).isNotNull().isEmpty();
+        verify(bookRepository).findByTitleIgnoreCase("");
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldReturnEmptyListWhenTitleAndDescriptionEmpty() {
+        when(bookRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase("", ""))
+                .thenReturn(List.of());
+
+        List<Book> result = bookService.getBooksByTitleOrDescription("", "");
+
+        assertThat(result).isNotNull().isEmpty();
+        verify(bookRepository).findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase("", "");
+    }
+
+
+
 }

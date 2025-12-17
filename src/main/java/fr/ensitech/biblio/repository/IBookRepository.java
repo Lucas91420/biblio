@@ -30,6 +30,10 @@ public interface IBookRepository extends JpaRepository<Book, Long> {
 
     Book existsByIsbn(String isbn);
 
+    List<Book> findByAuthors_Id(Long authorId);
+
+
+
     //@Query("select b from Book b where  ")
     //List<Book> findBooksByAuthor(Author author);
 

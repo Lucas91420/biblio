@@ -232,7 +232,6 @@ public class UserService implements IUserService {
         // active
         user.setActive(updatedUser.isActive());
 
-        // ⚠️ on NE TOUCHE PAS à email ni password
 
         userRepository.save(user);
     }
