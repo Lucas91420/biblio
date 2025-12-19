@@ -128,9 +128,8 @@ class UserServiceTest {
                 .hasMessage("Question de sécurité invalide");
     }
 
-    // =========================
-    // ACTIVATE
-    // =========================
+
+    // ACTIVATe
 
     @Test
     @DisplayName("activateAccount() doit activer le user")
@@ -152,10 +151,7 @@ class UserServiceTest {
                 .isInstanceOf(Exception.class)
                 .hasMessage("Email non trouvé");
     }
-
-    // =========================
     // LOGIN
-    // =========================
 
     @Test
     @DisplayName("login() succès si actif, mdp OK, non expiré")
@@ -209,9 +205,9 @@ class UserServiceTest {
                 .hasMessage("Identifiants invalides");
     }
 
-    // =========================
+
     // UPDATE PASSWORD (id)
-    // =========================
+
 
     @Test
     @DisplayName("updatePassword() succès si ancien ok et nouveau différent + historique ok")
@@ -250,9 +246,9 @@ class UserServiceTest {
         verify(userRepository, never()).save(any());
     }
 
-    // =========================
+
     // UPDATE PROFILE
-    // =========================
+
 
     @Test
     @DisplayName("updateProfile() doit modifier les champs autorisés et ne pas toucher email/password")
@@ -286,9 +282,9 @@ class UserServiceTest {
         verify(userRepository).save(user);
     }
 
-    // =========================
+
     // UNSUBSCRIBE
-    // =========================
+
 
     @Test
     @DisplayName("unsubscribe() doit supprimer l'utilisateur")

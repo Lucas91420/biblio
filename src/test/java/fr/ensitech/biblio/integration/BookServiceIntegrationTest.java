@@ -7,26 +7,19 @@ import fr.ensitech.biblio.service.BookService;
 import fr.ensitech.biblio.utils.Dates;
 import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
+import java.util.List;
 
-/**
- * Integration tests for BookService.
- * This class is currently empty and serves as a placeholder for future integration tests.
- */
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-public class BookServiceIntegrationTest {
+class BookServiceIntegrationTest {
 
     @Autowired
     private IBookRepository bookRepository;
@@ -52,7 +45,6 @@ public class BookServiceIntegrationTest {
                 .lastname("Lil")
                 .build();
 
-
         book = Book.builder()
                 .title("JAVAAAAAAAH")
                 .description("JAAAVAAVAAVAVAVAVAAAA")
@@ -68,49 +60,153 @@ public class BookServiceIntegrationTest {
                 .build();
     }
 
-    @AfterEach
-    void tearDown() {
-
-    }
-
-    @SneakyThrows
     @Test
-    @DisplayName("Ajoute d'un livre dans la base de données")
-    void shouldAddBookToDatabase() {
-        //GIVEN
-        //SetUp
+    @DisplayName("Ajout d'un livre dans la base de données")
+    void shouldAddBookToDatabase() throws Exception {
+        Book saved = bookService.addOrUpdateBook(book);
 
-        //WHEN
-        Book savedbook = bookService.addOrUpdateBook(book);
-        //THEN
-        assertThat(savedbook).isNotNull();
-        assertThat(savedbook.getId()).isGreaterThan(0);
-        assertThat(bookRepository.findById(savedbook.getId())).isPresent();
-        // verifier les auteurs
-        assertThat(savedbook.getAuthors()).isNotNull();
-        assertThat(savedbook.getAuthors().size()).isEqualTo(2);
+        assertThat(saved).isNotNull();
+        assertThat(saved.getId()).isNotNull();
+        assertThat(saved.getId()).isGreaterThan(0);
+
+        assertThat(bookRepository.findById(saved.getId())).isPresent();
+
+        assertThat(saved.getAuthors()).isNotNull();
+        assertThat(saved.getAuthors()).hasSize(2);
     }
 
-    @SneakyThrows
     @Test
     @DisplayName("Mettre à jour un livre dans la base de données")
-    void shouldUpdateBookInDatabase() {
+    void shouldUpdateBookInDatabase() throws Exception {
+        Book saved = bookService.addOrUpdateBook(book);
 
-        //GIVEN
-        Book _book = bookService.addOrUpdateBook(book);
-        _book.setNbPages((short)200);
-        _book.setLanguage("IT");
-        _book.setCategory("XJAVAX");
+        saved.setNbPages((short) 200);
+        saved.setLanguage("IT");
+        saved.setCategory("XJAVAX");
 
-        //WHEN
-        Book updatedBook = bookService.addOrUpdateBook(_book);
+        Book updated = bookService.addOrUpdateBook(saved);
 
-        //THEN
-        //assertThat(updatedBook).isNotNull();
-        //assertThat(updatedBook.getId()).isEqualTo(_book.getId());
-        assertThat(updatedBook.getNbPages()).isEqualTo((short)200);
-        assertThat(updatedBook.getLanguage()).isEqualTo("IT");
-        assertThat(updatedBook.getCategory()).isEqualTo("XJAVAX");
+        assertThat(updated.getNbPages()).isEqualTo((short) 200);
+        assertThat(updated.getLanguage()).isEqualTo("IT");
+        assertThat(updated.getCategory()).isEqualTo("XJAVAX");
+
+        Book reloaded = bookRepository.findById(updated.getId()).orElseThrow();
+        assertThat(reloaded.getNbPages()).isEqualTo((short) 200);
+        assertThat(reloaded.getLanguage()).isEqualTo("IT");
+        assertThat(reloaded.getCategory()).isEqualTo("XJAVAX");
     }
 
+    @Test
+    @DisplayName("Refuser l'ajout si ISBN déjà existant")
+    void shouldThrowWhenSavingBookWithAlreadyExistingIsbn() throws Exception {
+        bookService.addOrUpdateBook(book);
+
+        Book another = Book.builder()
+                .title("Autre")
+                .description("Autre desc")
+                .isbn("1234567890") // même isbn
+                .category("TEST")
+                .published(true)
+                .publicationDate(Dates.convertStringToDate("01/01/2010"))
+                .editor("X")
+                .nbPages((short) 10)
+                .language("FR")
+                .author(Author.builder().firstname("A").lastname("B").build())
+                .build();
+
+        assertThatThrownBy(() -> bookService.addOrUpdateBook(another))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Book with same ISBN already exists");
+    }
+
+    @Test
+    @DisplayName("getBooks() doit retourner au moins 1 livre après insertion")
+    void shouldGetBooks() throws Exception {
+        bookService.addOrUpdateBook(book);
+
+        List<Book> books = bookService.getBooks();
+
+        assertThat(books).isNotNull();
+        assertThat(books).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("getBook(id) doit retourner le livre")
+    void shouldGetBookById() throws Exception {
+        Book saved = bookService.addOrUpdateBook(book);
+
+        Book found = bookService.getBook(saved.getId());
+
+        assertThat(found).isNotNull();
+        assertThat(found.getIsbn()).isEqualTo("1234567890");
+    }
+
+    @Test
+    @DisplayName("getBooksByTitle(title) doit retourner la liste correspondante")
+    void shouldGetBooksByTitle() throws Exception {
+        bookService.addOrUpdateBook(book);
+
+        List<Book> result = bookService.getBooksByTitle("JAVAAAAAAAH");
+
+        assertThat(result).isNotNull();
+        assertThat(result).isNotEmpty();
+        assertThat(result.get(0).getTitle()).isEqualTo("JAVAAAAAAAH");
+    }
+
+    @Test
+    @DisplayName("getBooksByPublished(published) doit filtrer")
+    void shouldGetBooksByPublished() throws Exception {
+        bookService.addOrUpdateBook(book);
+
+        List<Book> publishedBooks = bookService.getBooksByPublished(true);
+        List<Book> nonPublishedBooks = bookService.getBooksByPublished(false);
+
+        assertThat(publishedBooks).isNotEmpty();
+        assertThat(nonPublishedBooks).isEmpty();
+    }
+
+    @Test
+    @DisplayName("getBookByIsbn(isbn) doit retourner le livre")
+    void shouldGetBookByIsbn() throws Exception {
+        bookService.addOrUpdateBook(book);
+
+        Book found = bookService.getBookByIsbn("1234567890");
+
+        assertThat(found).isNotNull();
+        assertThat(found.getTitle()).isEqualTo("JAVAAAAAAAH");
+    }
+
+    @Test
+    @DisplayName("getBooksByTitleOrDescription(title, description) doit matcher")
+    void shouldGetBooksByTitleOrDescription() throws Exception {
+        bookService.addOrUpdateBook(book);
+
+        List<Book> foundByTitle = bookService.getBooksByTitleOrDescription("java", "xxxxx");
+        List<Book> foundByDesc = bookService.getBooksByTitleOrDescription("xxxxx", "cours");
+
+        assertThat(foundByTitle).isNotEmpty();
+        assertThat(foundByDesc).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("getBooksBetweenYears(start, end) doit retourner les livres dans la période")
+    void shouldGetBooksBetweenYears() throws Exception {
+        bookService.addOrUpdateBook(book); // 2000
+
+        List<Book> inRange = bookService.getBooksBetweenYears(1999, 2001);
+        List<Book> outRange = bookService.getBooksBetweenYears(2010, 2012);
+
+        assertThat(inRange).isNotEmpty();
+        assertThat(outRange).isEmpty();
+    }
+
+    @Test
+    @DisplayName("deleteBook(id) doit supprimer")
+    void shouldDeleteExistingBook() throws Exception {
+        Book saved = bookService.addOrUpdateBook(book);
+
+        bookService.deleteBook(saved.getId());
+
+        assertThat(bookRepository.findById(saved.getId())).isEmpty();
+    }
 }
